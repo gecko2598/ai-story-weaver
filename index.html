@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Story Weaver</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* 修正箇所：CSS変数を定義 */
+    :root {
+      --input-padding-right: 35px;
+    }
+
+    body {
+      font-family: sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    h1, h2 {
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 5px;
+      margin-top: 30px;
+    }
+    h1 {
+      font-size: 2em;
+    }
+    h2 {
+      font-size: 1.5em;
+    }
+    .form-section {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+    .input-container label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #555;
+    }
+    .input-field-wrapper {
+      position: relative;
+      width: 100%;
+      display: flex;
+      align-items: center;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+      padding-right: var(--input-padding-right);
+    }
+    .clear-btn {
+      position: absolute;
+      right: 10px;
+      top: 0;
+      bottom: 0;
+      margin: auto 0;
+      background: none;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      font-size: 1.2em;
+      line-height: 1;
+      visibility: hidden;
+    }
+    input[type="text"]:not(:placeholder-shown) + .clear-btn {
+      visibility: visible;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      padding: 15px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+      resize: vertical;
+      white-space: pre-wrap;
+      background-color: #f9f9f9;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+    button, #templateSelect {
+      padding: 12px 20px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      margin: 5px;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+    }
+    #copyButton {
+      background-color: #28a745;
+      color: #fff;
+    }
+    #resetButton {
+      background-color: #dc3545;
+      color: #fff;
+    }
+    .privacy-note, .copyright-note, .features-note {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 40px;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+      text-align: left;
+    }
+    .version-note {
+      position: static;
+      font-size: 0.8em;
+      color: #aaa;
+      text-align: right;
+      margin-top: 10px;
+    }
+    /* スマホ版の共通スタイル */
+    .button-group, .template-group {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .button-group button, .template-group button, .template-group select {
+      margin-bottom: 10px;
+    }
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      margin: 5px 0;
+    }
+    .checkbox-container input {
+      margin-right: 5px;
+    }
+    #templateSelect {
+      border: 1px solid #f0ad4e;
+      border-radius: 5px;
+      background-color: #fff;
+    }
+    #saveTemplateButton {
+      background-color: #f0ad4e;
+      color: #fff;
+    }
+    #deleteTemplateButton {
+      background-color: #dc3545;
+      color: #fff;
+      align-self: flex-end;
+    }
+    .button-group .left-group {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .button-group .right-group {
+        display: flex;
+        justify-content: flex-end;
+    }
+    .template-group-left {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    /* PC版のスタイル（600px以上） */
+    @media (min-width: 600px) {
+      .input-container {
+        flex-direction: row;
+        align-items: center;
+      }
+      .input-container label {
+        min-width: 120px;
+        text-align: right;
+        padding-right: 10px;
+        margin-bottom: 0;
+      }
+      .button-group {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .button-group .left-group {
+        flex-direction: row;
+      }
+      .button-group button, .button-group .checkbox-container {
+        margin: 0 5px;
+      }
+      .template-group {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .template-group-left {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+      .template-group select, .template-group button {
+        margin: 0 5px;
+      }
+      #deleteTemplateButton {
+        align-self: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>AI Story Weaver</h1>
+
+  <div class="form-section">
+    <div class="input-container">
+      <label for="stageInput">舞台</label>
+      <div class="input-field-wrapper">
+        <input type="text" id="stageInput">
+        <button class="clear-btn" tabindex="-1">&times;</button>
+      </div>
+    </div>
+    <div class="input-container">
+      <label for="classInput">初期クラス</label>
+      <div class="input-field-wrapper">
+        <input type="text" id="classInput">
+        <button class="clear-btn" tabindex="-1">&times;</button>
+      </div>
+    </div>
+  </div>
+  
+  <h2>ゲームのフレーバーとして必要な前提情報</h2>
+  <div class="form-section">
+    <div class="input-container">
+      <label for="jobInput">職業</label>
+      <div class="input-field-wrapper">
+        <input type="text" id="jobInput">
+        <button class="clear-btn" tabindex="-1">&times;</button>
+      </div>
+    </div>
+    <div class="input-container">
+      <label for="hobby1Input">趣味嗜好１</label>
+      <div class="input-field-wrapper">
+        <input type="text" id="hobby1Input">
+        <button class="clear-btn" tabindex="-1">&times;</button>
+      </div>
+    </div>
+    <div class="input-container">
+      <label for="hobby2Input">趣味嗜好２</label>
+      <div class="input-field-wrapper">
+        <input type="text" id="hobby2Input">
+        <button class="clear-btn" tabindex="-1">&times;</button>
+      </div>
+    </div>
+    <div class="input-container">
+      <label for="hobby3Input">趣味嗜好３</label>
+      <div class="input-field-wrapper">
+        <input type="text" id="hobby3Input">
+        <button class="clear-btn" tabindex="-1">&times;</button>
+      </div>
+    </div>
+    <div class="input-container">
+      <label for="strongInput">得意なこと</label>
+      <div class="input-field-wrapper">
+        <input type="text" id="strongInput">
+        <button class="clear-btn" tabindex="-1">&times;</button>
+      </div>
+    </div>
+    <div class="input-container">
+      <label for="weakInput">苦手なこと</label>
+      <div class="input-field-wrapper">
+        <input type="text" id="weakInput">
+        <button class="clear-btn" tabindex="-1">&times;</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="button-group">
+    <div class="left-group">
+      <button id="copyButton">AIへの指示をコピー</button>
+      <div class="checkbox-container">
+        <input type="checkbox" id="includeImagePrompts" checked>
+        <label for="includeImagePrompts">ゲームに画像生成機能を追加</label>
+      </div>
+    </div>
+    <div class="right-group">
+      <button id="resetButton">入力をリセット</button>
+    </div>
+  </div>
+
+  <div class="template-group">
+    <div class="template-group-left">
+      <button id="saveTemplateButton">この設定を保存</button>
+      <select id="templateSelect"></select>
+    </div>
+    <button id="deleteTemplateButton">保存した設定を削除</button>
+  </div>
+  
+  <textarea id="copyableTextarea">ルールを読み込み中です...</textarea>
+
+  <section class="features-note">
+    <h2>このルールの簡単な特徴</h2>
+    <p>
+      このルールは、あなたの選択とAIの創造性が織りなす、あなただけの物語を紡ぐゲームです。
+      詳細なプレイ方法や魅力については、<a href="[note_url]" target="_blank">こちら</a>をご確認ください。
+    </p>
+    <ul>
+      <li>
+        <strong>あなたの入力が物語の軸に:</strong>
+        職業や趣味、得意なことなど、あなたが入力したキャラクター設定が物語の展開に深く影響します。
+      </li>
+      <li>
+        <strong>AIが問いかける「質問イベント」:</strong>
+        旅の途中でAIが問いかけることがあります。あなたの質問次第で、隠された情報を手に入れたり、物語に新たな可能性を生み出したりできます。
+      </li>
+      <li>
+        <strong>一発逆転の「必殺技」:</strong>
+        物語を通じて一度だけ、物語をあなたの望む方向へ導く切り札を使えます。これは必ず良い結果をもたらす、あなただけの一手です。
+      </li>
+      <li>
+        <strong>何気ない選択が引き起こす「サプライズ」:</strong>
+        物語の展開を大きく変える、予期せぬ出来事が発生するかもしれません。
+      </li>
+      <li>
+        <strong>運命を握るのはあなた:</strong>
+        選択によって物語は分岐し、ノーマル、バッド、シークレットなど、様々な結末があなたを待っています。
+      </li>
+      <li>
+        <strong>旅路を彩る画像生成:</strong>
+        物語の節目では、冒険の情景を彩る画像が生成されることがあります。あなたの旅がより鮮やかになるでしょう。
+      </li>
+    </ul>
+    <p>
+      <strong>すべての裁量はAIに委ねられる:</strong>
+      ルールはあくまで物語を豊かにするための指針です。全てのイベント発生、およびその内容はAIの裁量に委ねられています。ルールに縛られすぎないAIの、自由で創造的な応答をお楽しみください。
+    </p>
+  </section>
+
+  <section class="privacy-note">
+    <h2>ご注意：データ保存とプライバシーについて</h2>
+    <p>このツールは、入力されたルールをブラウザ内に自動で保存する機能（テンプレート保存機能）を備えています。</p>
+    <ul>
+      <li><strong>データの保存場所：</strong> 保存されるデータは、あなたのパソコンやスマートフォンの<strong>ブラウザ内のみ</strong>に保存されます。</li>
+      <li><strong>サーバーへの送信なし：</strong> 入力された内容が、当サイトのサーバーや外部へ送信されることは一切ありません。</li>
+      <li><strong>ご利用上の注意：</strong> ブラウザのキャッシュクリアや、別のブラウザ・端末からアクセスした場合、保存データは失われます。個人情報など、他人に知られたくない情報の入力は避け、<strong>自己責任</strong>のもとでご利用ください。</li>
+    </ul>
+    <p>
+      このソースコードは、AIアシスタントであるGeminiが作成したものです。
+      Geminiのガイドラインに沿って、個人情報を扱わない、外部サーバーとの通信を行わない、といった安全性を考慮した設計となっています。
+      このコードの安全性が保たれるよう、利用者はコードに手を加えず、そのままGitHubで公開・運用することをお勧めします。
+      このソースコードの編集履歴は <a href="#">こちら</a>で確認できます。
+    </p>
+  </section>
+
+  <section class="copyright-note">
+    <h2>著作権について</h2>
+    <p>AI Story Weaver © [ペンネーム] 2025</p>
+    <p>本ルールは、クリエイティブ・コモンズ <strong>表示-非営利-継承 4.0 国際（CC BY-NC-SA 4.0）</strong>ライセンスの下で提供されます。このライセンスの条件を満たす限り、誰でも自由に本ルールを利用、改変、公開することができます。ただし、改変・公開する際には、必ず<strong>元のNoteへのリンク</strong>を明記してください。ライセンスの詳細は、<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja" target="_blank">こちら</a>からご確認ください。</p>
+  </section>
+  
+  <div class="version-note">
+    ver 0.74
+  </div>
+
+  <script>
+    (function() {
+      // ユーザー入力をサニタイズするヘルパー関数
+      function sanitizeHTML(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+      }
+      
+      let initialContent = '';
+      const templateKey = 'gamebookTemplates';
+      const maxTemplates = 5;
+      let defaultStage = '';
+      let defaultClass = '';
+      
+      const requiredInputs = [
+        'jobInput', 'hobby1Input', 'hobby2Input', 'hobby3Input', 'strongInput', 'weakInput'
+      ];
+
+      // 非同期でルールファイルを読み込む関数
+      async function loadRuleFile() {
+        try {
+          const response = await fetch('rule.txt');
+          if (!response.ok) {
+            throw new Error('rule.txt の読み込みに失敗しました');
+          }
+          const ruleContent = await response.text();
+          initialContent = ruleContent;
+          
+          // rule.txtからデフォルト値を抽出
+          const stageMatch = ruleContent.match(/^- 舞台: 「(.*?)」/m);
+          if (stageMatch) {
+            defaultStage = stageMatch[1];
+          }
+          const classMatch = ruleContent.match(/^- 初期クラス: 「(.*?)」/m);
+          if (classMatch) {
+            defaultClass = classMatch[1];
+          }
+          
+          updateRuleText();
+          loadTemplates();
+        } catch (error) {
+          console.error('ルールの読み込みエラー:', error);
+          document.getElementById('copyableTextarea').value = 'ルールの読み込みに失敗しました。rule.txtファイルを確認してください。';
+        }
+      }
+
+      function loadTemplates(selectedName = null) {
+        const savedTemplates = localStorage.getItem(templateKey);
+        const templateSelect = document.getElementById('templateSelect');
+        templateSelect.innerHTML = '';
+        
+        let templates = [];
+        if (savedTemplates) {
+          templates = JSON.parse(savedTemplates);
+        }
+        
+        if (templates.length === 0) {
+          templateSelect.disabled = true;
+          document.getElementById('deleteTemplateButton').disabled = true;
+          const option = document.createElement('option');
+          option.textContent = "保存された設定はありません";
+          templateSelect.appendChild(option);
+          
+          // テンプレートがない場合はデフォルト値を設定
+          document.getElementById('stageInput').value = defaultStage;
+          document.getElementById('classInput').value = defaultClass;
+          updateRuleText();
+        } else {
+          templateSelect.disabled = false;
+          document.getElementById('deleteTemplateButton').disabled = false;
+          templates.forEach(template => {
+            const option = document.createElement('option');
+            option.value = template.name;
+            option.textContent = template.name;
+            templateSelect.appendChild(option);
+          });
+          
+          if (selectedName && templates.some(t => t.name === selectedName)) {
+            templateSelect.value = selectedName;
+          } else {
+            templateSelect.value = templates[0].name;
+          }
+          loadSelectedTemplate();
+        }
+      }
+
+      function saveTemplate() {
+        let templates = JSON.parse(localStorage.getItem(templateKey)) || [];
+        const inputElements = document.querySelectorAll('input[type="text"]');
+        
+        const templateName = prompt('設定の名前を入力してください：');
+        if (!templateName || templateName.trim() === '') {
+          alert('設定名は必須です。');
+          return;
+        }
+        
+        const existingTemplateIndex = templates.findIndex(t => t.name === templateName);
+
+        const inputsToSave = {};
+        inputElements.forEach(input => {
+          inputsToSave[input.id] = input.value;
+        });
+
+        if (existingTemplateIndex !== -1) {
+          const overwriteConfirm = confirm(`「${sanitizeHTML(templateName)}」は既に存在します。上書きしますか？`);
+          if (overwriteConfirm) {
+            templates[existingTemplateIndex].data = inputsToSave;
+            localStorage.setItem(templateKey, JSON.stringify(templates));
+            alert(`「${sanitizeHTML(templateName)}」を上書きしました！`);
+          } else {
+            return;
+          }
+        } else {
+          if (templates.length >= maxTemplates) {
+            alert(`保存できる設定は最大${maxTemplates}個です。不要な設定を削除してください。`);
+            return;
+          }
+          const newTemplate = {
+            name: templateName,
+            data: inputsToSave
+          };
+          templates.push(newTemplate);
+          localStorage.setItem(templateKey, JSON.stringify(templates));
+          alert(`「${sanitizeHTML(templateName)}」として設定を保存しました！`);
+        }
+        
+        loadTemplates(templateName);
+      }
+      
+      function loadSelectedTemplate() {
+        const templateSelect = document.getElementById('templateSelect');
+        const selectedName = templateSelect.value;
+        
+        const templates = JSON.parse(localStorage.getItem(templateKey));
+        const selectedTemplate = templates.find(t => t.name === selectedName);
+        
+        if (selectedTemplate) {
+          for (const key in selectedTemplate.data) {
+            const inputElement = document.getElementById(key);
+            if (inputElement) {
+              inputElement.value = selectedTemplate.data[key];
+            }
+          }
+          updateRuleText();
+        }
+      }
+      
+      function deleteTemplate() {
+        const templateSelect = document.getElementById('templateSelect');
+        const selectedName = templateSelect.value;
+
+        if (!selectedName) {
+          alert('削除する設定を選択してください。');
+          return;
+        }
+        
+        const confirmDelete = confirm(`「${sanitizeHTML(selectedName)}」を本当に削除しますか？`);
+        if (confirmDelete) {
+          let templates = JSON.parse(localStorage.getItem(templateKey)) || [];
+          templates = templates.filter(t => t.name !== selectedName);
+          localStorage.setItem(templateKey, JSON.stringify(templates));
+          alert(`「${sanitizeHTML(selectedName)}」を削除しました。`);
+          loadTemplates();
+        }
+      }
+
+      function updateRuleText() {
+        const inputs = {
+          stage: { id: 'stageInput', linePrefix: '- 舞台: ' },
+          class: { id: 'classInput', linePrefix: '- 初期クラス: ' },
+          job: { id: 'jobInput', linePrefix: '- 職業: ' },
+          hobby1: { id: 'hobby1Input', linePrefix: '- 趣味嗜好１: ' },
+          hobby2: { id: 'hobby2Input', linePrefix: '- 趣味嗜好２: ' },
+          hobby3: { id: 'hobby3Input', linePrefix: '- 趣味嗜好３: ' },
+          strong: { id: 'strongInput', linePrefix: '- 得意なこと: ' },
+          weak: { id: 'weakInput', linePrefix: '- 苦手なこと: ' }
+        };
+        
+        let newText = initialContent;
+        
+        for (const key in inputs) {
+          const item = inputs[key];
+          const inputElement = document.getElementById(item.id);
+          const inputValue = inputElement.value;
+          
+          const lineRegex = new RegExp(`^${item.linePrefix}.*?$`, 'm');
+          
+          if (inputValue.trim() !== '') {
+            newText = newText.replace(lineRegex, `${item.linePrefix}「${inputValue}」`);
+          }
+        }
+        
+        const includeImagePrompts = document.getElementById('includeImagePrompts').checked;
+
+        if (includeImagePrompts) {
+          // rule.txtから取得したデフォルト値を使用
+          const stageValue = document.getElementById('stageInput').value || defaultStage;
+          const classValue = document.getElementById('classInput').value || defaultClass;
+          const jobValue = document.getElementById('jobInput').value;
+          
+          // タイトル絵のプロンプト
+          const titlePrompt = `
+- **キャラクタークリエイト完了後、以下の**タイトル絵**を**最優先で**生成する。**
+### プロンプト指示（翻訳対象）: stage, starting_job, starting_class
+  - **ゲームルール（重要）:** AIはゲームの進行によってキャラクターのクラスが変化した場合、常に最新のクラスを画像生成に利用すること。
+### タイトル絵のプロンプト
+  - A close-up illustration of a <starting_job> character, embodying the chosen stats, in a <stage> setting. The art style is cinematic and painterly, with dramatic lighting. The character shows a sense of determination and hidden power.
+`;
+
+          // 必殺技のプロンプト
+          const specialMovePrompt = `
+- **ユーザーが「必殺技を発動します」と宣言した場合、以下の**必殺技画像**を**最優先で**生成する。**
+### プロンプト指示（翻訳対象）: class
+  - **ゲームルール（重要）:** AIはユーザーの宣言を、現在のゲームフロー（物語の進行、選択肢の提示、質問の回答など）を中断する最高レベルの割り込みコマンドとして認識する。
+  - このコマンドが発動した場合、AIは他のすべての処理を停止し、直ちに画像の生成と、その後の効果を反映した物語の記述を行う。
+  - この処理が完了するまで、物語の次のステップに進むことはない。
+  - AIはゲームの進行によってキャラクターのクラスが変化した場合、常に最新のクラスを画像生成に利用すること。
+### 必殺技画像のプロンプト
+  - An epic action scene of a <class> character unleashing a powerful ultimate move. The surrounding environment violently reacts to the immense power, with a dynamic and highly detailed art style.
+`;
+
+          // サプライズのプロンプト
+          const surprisePrompt = `
+- **サプライズの発生はAIが判断する。サプライズを発生させる際には、以下のサプライズ画像のプロンプトと物語のテキストを、必ず同時に出力すること。**
+### プロンプト指示（翻訳対象）: stage
+  - **ゲームルール（重要）:** AIはゲームの進行によってキャラクターのクラスが変化した場合、常に最新のクラスを画像生成に利用すること。
+### サプライズ画像のプロンプト
+  - A surprising and impactful moment occurring in the <stage> setting, with an element of unexpected discovery and wonder.
+`;
+
+          // 物語の終了のプロンプト
+          const endingPrompt = `
+- **物語の終了に到達した際には、以下の**物語の終了画像**を**必ず**生成する。**
+### プロンプト指示（翻訳対象）: stage, class, ending
+  - **ゲームルール（重要）:** AIはゲームの進行によってキャラクターのクラスが変化した場合、常に最新のクラスを画像生成に利用すること。
+  - **エンディングのタイプ（ending）**：ノーマルエンド、バッドエンド、シークレットエンド
+### 物語の終了画像のプロンプト
+  - **ノーマルエンド**: The final scene of the game. A climactic or concluding image in the <stage> setting, featuring a <class> character. The art style is beautiful and painterly.
+  - **バッドエンド**: The final scene of the game. A climactic and concluding image in the <stage> setting, featuring a <class> character, filled with a sense of loss and despair. The art style is dark and moody.
+  - **シークレットエンド**: The final, secret ending scene of the game. A beautiful and surreal image in the <stage> setting, featuring a <class> character. The scene is bathed in an ethereal light, filled with a sense of mystery and cosmic revelation.
+`;
+          
+          // ルールにプロンプトを挿入
+          newText = newText
+            .replace("## キャラクタークリエイト", `## キャラクタークリエイト\n\n${titlePrompt}`)
+            .replace("## 強制介入権による物語の介入", `## 強制介入権による物語の介入\n\n${specialMovePrompt}`)
+            .replace("## サプライズ", `## サプライズ\n\n${surprisePrompt}`)
+            .replace("## 物語の終了", `## 物語の終了\n\n${endingPrompt}`);
+        }
+        
+        document.getElementById('copyableTextarea').value = newText;
+      }
+
+      function clearInput(id) {
+        document.getElementById(id).value = '';
+        updateRuleText();
+      }
+
+      function copyContent() {
+        const emptyRequiredInputs = requiredInputs.filter(id => {
+          const input = document.getElementById(id);
+          return input && input.value.trim() === '';
+        });
+
+        if (emptyRequiredInputs.length > 0) {
+          alert('ゲームのフレーバーとして必要な前提情報が空欄です。物語の面白さを最大限に引き出すため、すべての項目を入力してください。');
+          return;
+        }
+
+        const textToCopy = document.getElementById('copyableTextarea').value;
+        
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          alert('AIへの指示をクリップボードにコピーしました！');
+        }, (err) => {
+          console.error('クリップボードへのコピーに失敗しました', err);
+          alert('コピーに失敗しました。');
+        });
+      }
+
+      function resetContent() {
+        const confirmReset = confirm('入力内容をすべてリセットしますか？この操作は元に戻せません。');
+        if (confirmReset) {
+            document.getElementById('stageInput').value = defaultStage;
+            document.getElementById('classInput').value = defaultClass;
+            const inputs = document.querySelectorAll('input[type="text"]');
+            inputs.forEach(input => {
+                if(input.id !== 'stageInput' && input.id !== 'classInput') {
+                    input.value = '';
+                }
+            });
+            updateRuleText();
+        }
+      }
+      
+      // イベントリスナーをセットアップ
+      document.addEventListener('DOMContentLoaded', () => {
+        // onloadで実行していた処理をDOMContentLoadedに移動
+        loadRuleFile();
+        
+        // すべてのイベントリスナーをJavaScriptに一本化
+        document.querySelectorAll('input[type="text"]').forEach(input => {
+            input.addEventListener('input', updateRuleText);
+        });
+        document.getElementById('includeImagePrompts').addEventListener('change', updateRuleText);
+        document.getElementById('templateSelect').addEventListener('change', loadSelectedTemplate);
+        document.getElementById('saveTemplateButton').addEventListener('click', saveTemplate);
+        document.getElementById('deleteTemplateButton').addEventListener('click', deleteTemplate);
+        document.getElementById('copyButton').addEventListener('click', copyContent);
+        document.getElementById('resetButton').addEventListener('click', resetContent);
+        document.querySelectorAll('.clear-btn').forEach(btn => {
+            btn.addEventListener('click', (event) => {
+                const inputId = event.target.closest('.input-field-wrapper').querySelector('input').id;
+                clearInput(inputId);
+            });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>
